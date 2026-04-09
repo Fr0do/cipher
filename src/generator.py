@@ -40,11 +40,12 @@ from PIL import Image, ImageDraw, ImageFont
 # ---------------------------------------------------------------------------
 
 LEVELS = {
+    # distractor: 0=none, 1=1 fake string, 2=2 fakes, 3=2 fakes + color similar to key
     "L1": dict(key_visibility=1, op_count=1, nl_ambiguity=1, distractor=0),
-    "L2": dict(key_visibility=2, op_count=2, nl_ambiguity=1, distractor=1),
+    "L2": dict(key_visibility=2, op_count=2, nl_ambiguity=1, distractor=0),
     "L3": dict(key_visibility=3, op_count=2, nl_ambiguity=2, distractor=1),
     "L4": dict(key_visibility=3, op_count=3, nl_ambiguity=3, distractor=2),
-    "L5": dict(key_visibility=4, op_count=4, nl_ambiguity=4, distractor=2),
+    "L5": dict(key_visibility=4, op_count=4, nl_ambiguity=4, distractor=3),
     # L6 (QR/morse): reserved for future work
 }
 
@@ -199,8 +200,12 @@ def embed_key_overlay(
     start_t: float,
     end_t: float,
     rng: random.Random,
+    n_distractors: int = 0,
 ) -> None:
-    """Burn key text onto video frames during [start_t, end_t]."""
+    """Burn key text onto video frames during [start_t, end_t].
+    Optionally add n_distractors fake alphanumeric strings at different positions/windows.
+    Distractors appear at non-overlapping windows with slightly different styling.
+    """
     # Probe video dimensions
     probe = subprocess.run(
         ["ffprobe", "-v", "quiet", "-select_streams", "v:0",
@@ -262,17 +267,73 @@ def embed_key_overlay(
     overlay_path = tempfile.mktemp(suffix="_overlay.png")
     overlay.save(overlay_path)
 
-    # Overlay on video
-    duration = end_t - start_t
-    cmd = [
-        "ffmpeg", "-y", "-i", input_video, "-i", overlay_path,
-        "-filter_complex",
-        f"[0:v][1:v]overlay=0:0:enable='between(t,{start_t},{end_t})'[v]",
-        "-map", "[v]", "-map", "0:a?",
-        "-c:a", "copy", output_video,
+    # Build distractors — fake strings at non-overlapping time windows
+    distractor_overlays = []
+    clip_dur = end_t + 2.0  # rough upper bound
+    distractor_palette = [(255, 200, 100), (180, 255, 180), (200, 180, 255)]
+
+    for d_idx in range(n_distractors):
+        # Pick a non-overlapping window
+        if d_idx == 0:
+            d_start = max(0.0, start_t - rng.uniform(1.5, 3.0))
+            d_end = d_start + rng.uniform(1.5, 3.0)
+            if d_end >= start_t:
+                d_start = end_t + rng.uniform(0.3, 1.5)
+                d_end = d_start + rng.uniform(1.5, 2.5)
+        else:
+            d_start = end_t + rng.uniform(0.5 + d_idx, 1.5 + d_idx)
+            d_end = d_start + rng.uniform(1.5, 2.5)
+
+        fake_key = _random_key(rng, rng.randint(5, 8))
+        d_color = distractor_palette[d_idx % len(distractor_palette)]
+        if n_distractors >= 3:  # L5: make one distractor same color as key
+            d_color = params["color"]
+
+        d_overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+        d_draw = ImageDraw.Draw(d_overlay)
+        dx = int(rng.uniform(0.1, 0.85) * w)
+        dy = int(rng.uniform(0.1, 0.85) * h)
+        d_alpha = rng.randint(120, 200)
+        d_draw.text((dx + 2, dy + 2), fake_key, fill=(0, 0, 0, d_alpha), font=font)
+        d_draw.text((dx, dy), fake_key, fill=(*d_color, d_alpha), font=font)
+        d_path = tempfile.mktemp(suffix=f"_distractor{d_idx}.png")
+        d_overlay.save(d_path)
+        distractor_overlays.append((d_path, d_start, min(d_end, clip_dur - 0.1)))
+
+    # Build ffmpeg filter chain: chain key + all distractor overlays
+    inputs = ["-i", input_video, "-i", overlay_path]
+    for d_path, _, _ in distractor_overlays:
+        inputs += ["-i", d_path]
+
+    n_inputs = 1 + len(distractor_overlays)  # key + distractors
+    # Build overlay filter graph
+    filters = []
+    prev = "0:v"
+    for i in range(n_inputs):
+        label_in = f"[{prev}]" if i > 0 else f"[{prev}]"
+        img_idx = i + 1  # input index (0 = video)
+        if i == 0:
+            t_s, t_e = start_t, end_t
+        else:
+            t_s, t_e = distractor_overlays[i - 1][1], distractor_overlays[i - 1][2]
+        out_label = f"[v{i}]" if i < n_inputs - 1 else "[vout]"
+        filters.append(
+            f"[{prev}][{img_idx}:v]overlay=0:0:enable='between(t,{t_s},{t_e})'{out_label}"
+        )
+        prev = f"v{i}"
+
+    filter_str = ";".join(filters)
+    cmd = ["ffmpeg", "-y"] + inputs + [
+        "-filter_complex", filter_str,
+        "-map", "[vout]", "-map", "0:a?", "-c:a", "copy", output_video,
     ]
     result = subprocess.run(cmd, capture_output=True)
     os.unlink(overlay_path)
+    for d_path, _, _ in distractor_overlays:
+        try:
+            os.unlink(d_path)
+        except Exception:
+            pass
     if result.returncode != 0:
         raise RuntimeError(f"ffmpeg overlay failed: {result.stderr.decode()[-300:]}")
 
@@ -456,13 +517,14 @@ def generate_sample(
         capture_output=True, check=True,
     )
 
-    # 4. Embed key
+    # 4. Embed key + distractors
     key_start = rng.uniform(3.0, clip_duration - 6.0)
     key_end = min(key_start + rng.uniform(2.5, 4.5), clip_duration - 0.5)
 
     keyed_path = os.path.join(output_dir, f"{sample_id}_keyed.mp4")
     embed_key_overlay(clip_path, keyed_path, key,
-                      cfg["key_visibility"], key_start, key_end, rng)
+                      cfg["key_visibility"], key_start, key_end, rng,
+                      n_distractors=cfg["distractor"])
 
     # 5. Apply scramble ops
     scrambled_path = os.path.join(output_dir, f"{sample_id}_scrambled.mp4")

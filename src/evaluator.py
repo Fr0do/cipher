@@ -76,6 +76,36 @@ def char_f1(pred: Optional[str], gold: str) -> float:
 # Result dataclass
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Token / call tracking wrapper
+# ---------------------------------------------------------------------------
+
+class TrackedVlmFn:
+    """Wraps a vlm_fn to count calls and tokens consumed."""
+
+    def __init__(self, vlm_fn):
+        self._fn = vlm_fn
+        self.calls: int = 0
+        self.input_tokens: int = 0
+        self.output_tokens: int = 0
+        self.__name__ = getattr(vlm_fn, "__name__", "tracked")
+
+    def __call__(self, prompt: str, images=None) -> str:
+        self.calls += 1
+        # Rough token estimate (4 chars ≈ 1 token) — replaced by SDK counts if available
+        self.input_tokens += len(prompt) // 4 + (len(images or []) * 256)
+        result = self._fn(prompt, images=images)
+        self.output_tokens += len(result) // 4
+        return result
+
+    def reset(self):
+        self.calls = self.input_tokens = self.output_tokens = 0
+
+    @property
+    def total_tokens(self) -> int:
+        return self.input_tokens + self.output_tokens
+
+
 @dataclass
 class SampleResult:
     sample_id: str
@@ -89,6 +119,7 @@ class SampleResult:
 
     # Stage 2
     s2_execute_ok: bool = False
+    ffmpeg_calls: int = 0
 
     # Stage 3
     pred_key: str = ""
@@ -98,8 +129,17 @@ class SampleResult:
     # Aggregate
     pipeline_f1: float = 0.0   # 0.25*S1 + 0.25*S2 + 0.50*S3_char_f1
 
+    # Cost tracking
+    vlm_calls: int = 0
+    input_tokens: int = 0
+    output_tokens: int = 0
+
     latency_s: float = 0.0
     error: str = ""
+
+    @property
+    def total_tokens(self) -> int:
+        return self.input_tokens + self.output_tokens
 
 
 def _pipeline_f1(s1: float, s2: bool, s3: float) -> float:
@@ -122,6 +162,10 @@ def compute_stats(results: list[SampleResult]) -> dict:
         "S1_parse_F1": round(sum(r.s1_parse_f1 for r in results) / n, 4),
         "S2_execute_rate": round(sum(r.s2_execute_ok for r in results) / n, 4),
         "avg_latency_s": round(sum(r.latency_s for r in results) / n, 2),
+        # Cost metrics
+        "avg_vlm_calls": round(sum(r.vlm_calls for r in results) / n, 2),
+        "avg_total_tokens": round(sum(r.total_tokens for r in results) / n, 0),
+        "avg_ffmpeg_calls": round(sum(r.ffmpeg_calls for r in results) / n, 2),
     }
 
 
@@ -136,6 +180,9 @@ def _run_one(sample: dict, vlm_fn=None) -> SampleResult:
     import subprocess, tempfile
     from pathlib import Path as P
 
+    # Wrap vlm_fn for token/call tracking
+    tracker = TrackedVlmFn(vlm_fn) if vlm_fn else None
+
     res = SampleResult(
         sample_id=sample["sample_id"],
         level=sample["level"],
@@ -146,8 +193,7 @@ def _run_one(sample: dict, vlm_fn=None) -> SampleResult:
 
     try:
         # ---- Stage 1: parse ----
-        ops = parse_instructions(sample["nl_instructions"],
-                                 vlm_fn=vlm_fn)
+        ops = parse_instructions(sample["nl_instructions"], vlm_fn=tracker)
         res.pred_ops = [op["op"] for op in ops]
         res.s1_parse_f1 = op_parse_f1(res.pred_ops, res.gold_ops)
 
@@ -163,6 +209,7 @@ def _run_one(sample: dict, vlm_fn=None) -> SampleResult:
 
             ok = True
             for cmd in cmds:
+                res.ffmpeg_calls += 1
                 r = subprocess.run(cmd, capture_output=True)
                 if r.returncode != 0:
                     ok = False
@@ -173,7 +220,7 @@ def _run_one(sample: dict, vlm_fn=None) -> SampleResult:
                 res.s2_execute_ok = True
 
                 # ---- Stage 3: extract ----
-                key = extract_key(out_path, vlm_fn=vlm_fn)
+                key = extract_key(out_path, vlm_fn=tracker)
                 res.pred_key = key or ""
                 res.s3_em = exact_match(key, sample["key"])
                 res.s3_char_f1 = char_f1(key, sample["key"])
@@ -185,6 +232,12 @@ def _run_one(sample: dict, vlm_fn=None) -> SampleResult:
 
     res.latency_s = round(time.time() - t0, 2)
     res.pipeline_f1 = _pipeline_f1(res.s1_parse_f1, res.s2_execute_ok, res.s3_char_f1)
+
+    if tracker:
+        res.vlm_calls = tracker.calls
+        res.input_tokens = tracker.input_tokens
+        res.output_tokens = tracker.output_tokens
+
     return res
 
 
