@@ -1,14 +1,25 @@
 """
-generator.py — procedural captcha benchmark generator for VidEditBench.
+generator.py — procedural captcha benchmark generator for CIPHER.
 
 Each sample = (scrambled_video, nl_instructions, key, metadata)
-Fully deterministic from (seed, difficulty_config).
+Fully deterministic from (seed, difficulty_config, background_track).
 
 Difficulty axes:
-  key_visibility : 1-5  (large plain → small → low-contrast → brief → QR/morse)
+  key_visibility : 1-4  (large plain → small → low-contrast → brief flash)
   op_count       : 1-4  (number of edit operations chained)
   nl_ambiguity   : 1-4  (exact → paraphrase → reversed description → compositional)
-  distractor     : 0-2  (0=black bg, 1=nature video, 2=text-heavy video)
+
+Background tracks (independent of difficulty, crossed with L1-L5):
+  clean   — animation / studio footage, no on-screen text
+             sources: Blender open movies (BBB, Sintel, Elephants Dream)
+  natural — real-world human activity, incidental text only
+             sources: Kinetics-400 / ActivityNet clips
+  text    — high on-screen text density (slides, news tickers, screencasts)
+             sources: TED talks, Khan Academy, newscast recordings
+
+Paper structure: 3 tracks × 5 levels × N samples = full CIPHER dataset.
+Per-track results reveal whether background text confounds key extraction (S3)
+independently of instruction-following (S1) and execution (S2).
 """
 import random
 import string
@@ -330,18 +341,64 @@ def apply_ops(input_video: str, output_video: str, ops: list[dict]) -> None:
 # Main generator
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Background pool
+# ---------------------------------------------------------------------------
+
+class BackgroundPool:
+    """
+    Manages a collection of background video files for procedural generation.
+    Videos are selected deterministically by seed — same seed always picks
+    the same background clip and offset.
+
+    Populate with add() before generating samples.
+    Recommended minimum: 10+ diverse clips per pool.
+    """
+
+    def __init__(self, videos: list[str] = None):
+        self._videos: list[str] = []
+        for v in (videos or []):
+            self.add(v)
+
+    def add(self, path: str) -> None:
+        p = os.path.abspath(path)
+        if not os.path.exists(p):
+            raise FileNotFoundError(p)
+        self._videos.append(p)
+
+    def __len__(self):
+        return len(self._videos)
+
+    def pick(self, rng: random.Random) -> str:
+        if not self._videos:
+            raise RuntimeError("BackgroundPool is empty — add videos first")
+        return rng.choice(self._videos)
+
+    @classmethod
+    def from_dir(cls, directory: str, exts: tuple = (".mp4", ".mkv", ".webm")) -> "BackgroundPool":
+        pool = cls()
+        for p in sorted(Path(directory).glob("**/*")):
+            if p.suffix.lower() in exts:
+                pool.add(str(p))
+        return pool
+
+
+# ---------------------------------------------------------------------------
+# Sample dataclass
+# ---------------------------------------------------------------------------
+
 @dataclass
 class CaptchaSample:
     sample_id: str
     level: str
     key: str
-    ops: list[str]                   # op names in order
+    ops: list[str]          # op names in order
     nl_instructions: str
-    scrambled_video: str             # path
+    scrambled_video: str    # path
+    background_video: str   # which source clip was used
     key_visibility: int
     op_count: int
     nl_ambiguity: int
-    distractor: int
     key_start_t: float
     key_end_t: float
     seed: int
@@ -351,17 +408,21 @@ class CaptchaSample:
         return asdict(self)
 
 
+# ---------------------------------------------------------------------------
+# Sample generator
+# ---------------------------------------------------------------------------
+
 def generate_sample(
     seed: int,
     level: str,
-    background_video: str,
+    pool: BackgroundPool,
     output_dir: str,
     clip_duration: float = 15.0,
     key_length: int = 7,
 ) -> CaptchaSample:
     """
     Generate one benchmark sample deterministically from seed + level.
-    Returns CaptchaSample with path to scrambled video.
+    Background video is drawn from pool — same seed always yields same result.
     """
     cfg = LEVELS[level]
     rng = random.Random(seed)
@@ -370,51 +431,44 @@ def generate_sample(
     sample_id = f"{level}_s{seed:06d}"
 
     # 1. Select ops
-    n_ops = cfg["op_count"]
-    chosen_ops = rng.sample(CHAIN_OPS, k=min(n_ops, len(CHAIN_OPS)))
+    chosen_ops = rng.sample(CHAIN_OPS, k=min(cfg["op_count"], len(CHAIN_OPS)))
 
     # 2. Generate key
     key = _random_key(rng, key_length)
 
-    # 3. Select clip segment from background video
-    # Probe total duration
+    # 3. Pick background video and extract clip
+    bg_video = pool.pick(rng)
     probe = subprocess.run(
         ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-         "-of", "csv=p=0", background_video],
-        capture_output=True, text=True
+         "-of", "csv=p=0", bg_video],
+        capture_output=True, text=True,
     )
     try:
         total_dur = float(probe.stdout.strip())
     except Exception:
         total_dur = 60.0
 
-    max_start = max(0, total_dur - clip_duration - 1)
-    clip_start = rng.uniform(0, max_start)
-
+    clip_start = rng.uniform(0, max(0, total_dur - clip_duration - 1))
     clip_path = os.path.join(output_dir, f"{sample_id}_clip.mp4")
     subprocess.run(
-        ["ffmpeg", "-y", "-ss", str(clip_start), "-i", background_video,
+        ["ffmpeg", "-y", "-ss", str(clip_start), "-i", bg_video,
          "-t", str(clip_duration), "-c", "copy", clip_path],
-        capture_output=True, check=True
+        capture_output=True, check=True,
     )
 
-    # 4. Embed key into clip
+    # 4. Embed key
     key_start = rng.uniform(3.0, clip_duration - 6.0)
-    key_end = key_start + rng.uniform(2.5, 4.5)
-    key_end = min(key_end, clip_duration - 0.5)
+    key_end = min(key_start + rng.uniform(2.5, 4.5), clip_duration - 0.5)
 
     keyed_path = os.path.join(output_dir, f"{sample_id}_keyed.mp4")
-    if cfg["key_visibility"] == 5:
-        embed_key_qr(clip_path, keyed_path, key, key_start, key_end)
-    else:
-        embed_key_overlay(clip_path, keyed_path, key,
-                          cfg["key_visibility"], key_start, key_end, rng)
+    embed_key_overlay(clip_path, keyed_path, key,
+                      cfg["key_visibility"], key_start, key_end, rng)
 
     # 5. Apply scramble ops
     scrambled_path = os.path.join(output_dir, f"{sample_id}_scrambled.mp4")
     apply_ops(keyed_path, scrambled_path, chosen_ops)
 
-    # 6. Build NL instructions
+    # 6. NL instructions
     instructions = build_instructions(chosen_ops, cfg["nl_ambiguity"], rng)
 
     # 7. Cleanup intermediates
@@ -431,10 +485,10 @@ def generate_sample(
         ops=[op["name"] for op in chosen_ops],
         nl_instructions=instructions,
         scrambled_video=scrambled_path,
+        background_video=bg_video,
         key_visibility=cfg["key_visibility"],
         op_count=cfg["op_count"],
         nl_ambiguity=cfg["nl_ambiguity"],
-        distractor=cfg["distractor"],
         key_start_t=key_start,
         key_end_t=key_end,
         seed=seed,
@@ -448,24 +502,24 @@ def generate_sample(
 def generate_split(
     level: str,
     n_samples: int,
-    background_video: str,
+    pool: BackgroundPool,
     output_dir: str,
     seed_offset: int = 0,
 ) -> list[CaptchaSample]:
-    # Hash level name into offset so different levels never collide on same seed
     level_hash = int(hashlib.md5(level.encode()).hexdigest()[:8], 16) % 100_000
     samples = []
     for i in range(n_samples):
         seed = seed_offset + level_hash + i
-        sample = generate_sample(seed, level, background_video,
+        sample = generate_sample(seed, level, pool,
                                  os.path.join(output_dir, level))
         samples.append(sample)
-        print(f"  [{level}] {i+1}/{n_samples} key={sample.key} ops={sample.ops}")
+        bg = os.path.basename(sample.background_video)
+        print(f"  [{level}] {i+1}/{n_samples} key={sample.key} ops={sample.ops} bg={bg}")
     return samples
 
 
 def generate_benchmark(
-    background_video: str,
+    pool: BackgroundPool,
     output_dir: str,
     n_per_level: int = 50,
     levels: list[str] = None,
@@ -475,12 +529,15 @@ def generate_benchmark(
     if levels is None:
         levels = list(LEVELS.keys())
 
-    manifest = {"levels": {}, "background_video": background_video, "n_per_level": n_per_level}
+    manifest = {
+        "levels": {},
+        "n_per_level": n_per_level,
+        "pool_size": len(pool),
+    }
 
     for level in levels:
         print(f"\n=== Generating {level} ({n_per_level} samples) ===")
-        samples = generate_split(level, n_per_level, background_video,
-                                 output_dir, seed_offset)
+        samples = generate_split(level, n_per_level, pool, output_dir, seed_offset)
         manifest["levels"][level] = [s.to_dict() for s in samples]
 
     manifest_path = os.path.join(output_dir, "manifest.json")
@@ -496,17 +553,28 @@ def generate_benchmark(
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Generate VidEditBench captcha benchmark")
-    parser.add_argument("--video", required=True, help="Background video path")
-    parser.add_argument("--output", default="./benchmark_data", help="Output directory")
+    parser = argparse.ArgumentParser(description="Generate CIPHER benchmark")
+    parser.add_argument("--videos", nargs="+", required=True,
+                        help="Background video files (or dirs) — Kinetics clips recommended")
+    parser.add_argument("--output", default="./data", help="Output directory")
     parser.add_argument("--levels", nargs="+", default=list(LEVELS.keys()),
                         choices=list(LEVELS.keys()), help="Difficulty levels to generate")
-    parser.add_argument("--n", type=int, default=10, help="Samples per level")
+    parser.add_argument("--n", type=int, default=50, help="Samples per level")
     parser.add_argument("--seed-offset", type=int, default=0)
     args = parser.parse_args()
 
+    pool = BackgroundPool()
+    for v in args.videos:
+        if os.path.isdir(v):
+            pool2 = BackgroundPool.from_dir(v)
+            for vid in pool2._videos:
+                pool.add(vid)
+        else:
+            pool.add(v)
+    print(f"Background pool: {len(pool)} videos")
+
     generate_benchmark(
-        background_video=args.video,
+        pool=pool,
         output_dir=args.output,
         n_per_level=args.n,
         levels=args.levels,
