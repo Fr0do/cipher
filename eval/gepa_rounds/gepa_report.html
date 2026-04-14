@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CIPHER — GEPA Calibration Report</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", sans-serif; max-width: 1100px; margin: 2em auto; padding: 0 1.5em; color: #222; line-height: 1.5; }
+  h1 { border-bottom: 2px solid #333; padding-bottom: 0.3em; }
+  h2 { margin-top: 2em; color: #1a4480; }
+  h3 { color: #2a5a9e; margin-top: 1.5em; }
+  table { border-collapse: collapse; width: 100%; margin: 0.8em 0; font-size: 0.92em; }
+  th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+  th { background: #f0f4fa; }
+  tr.best { background: #e8f5e9; }
+  tr.target { background: #fff9c4; }
+  tr.fail { background: #ffebee; }
+  code { background: #f5f5f5; padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 0.85em; }
+  .metric { display: inline-block; padding: 2px 8px; border-radius: 10px; font-weight: bold; font-size: 0.85em; }
+  .em-high { background: #c8e6c9; color: #1b5e20; }
+  .em-mid { background: #fff9c4; color: #795500; }
+  .em-zero { background: #ffcdd2; color: #b71c1c; }
+  .summary-box { background: #f8f9fa; border-left: 4px solid #1a4480; padding: 1em 1.2em; margin: 1em 0; }
+  .warn { background: #fff3cd; border-left: 4px solid #ff9800; padding: 1em 1.2em; margin: 1em 0; }
+
+  .sample-gallery { display: flex; gap: 2em; margin: 1.5em 0; flex-wrap: wrap; }
+  .sample { border: 1px solid #ddd; border-radius: 6px; padding: 1em; background: #fafafa; flex: 1; min-width: 420px; }
+  .sample h4 { margin-top: 0; color: #1a4480; }
+  .sample img { width: 100%; height: auto; border: 1px solid #aaa; display: block; }
+  .sample .answer { margin-top: 0.6em; font-family: "SF Mono", Menlo, monospace; font-size: 1.1em; background: #222; color: #ffeb3b; padding: 6px 12px; text-align: center; letter-spacing: 2px; border-radius: 3px; }
+  .sample .pred  { margin-top: 0.4em; font-family: "SF Mono", Menlo, monospace; font-size: 1em; padding: 4px 10px; text-align: center; letter-spacing: 1px; border-radius: 3px; background: #fff; border: 1px dashed #888; }
+  .sample .meta { font-size: 0.85em; color: #666; margin-top: 0.5em; }
+</style>
+</head>
+<body>
+
+<h1>CIPHER — GEPA Calibration Report</h1>
+<p><strong>Goal:</strong> find a captcha generator configuration at which Gemini Flash achieves <strong>~3% EM</strong>
+(the sweet spot between "100% trivial" and "0% hallucination"). Fitness function:
+<code>-|EM - 0.03| - 0.5·(missing/n)</code>.</p>
+
+<div class="summary-box">
+<strong>TL;DR:</strong> four rounds, 5 programs each (R4 used 8 samples/program instead of 4).
+R3 prog_3 reaches EM=0% with the key length predicted correctly (a <em>near-miss</em>), making it the strongest
+candidate for R5. R4 is invalid: Gemini API was down, Claude was substituted, and Claude hallucinates on
+captchas (char-acc 2–11%, which matches our prior finding in project memory).
+</div>
+
+<h2>1. Sample captchas — easy vs. calibration target</h2>
+<p>Two examples from Round 3: an "easy" program that Gemini solves perfectly, and the calibration target that
+produces near-miss errors. The images below are the <em>input</em> (what the VLM sees); the yellow box labels
+the <em>gold key</em>, and the dashed box shows what Gemini actually predicted.</p>
+
+<div class="sample-gallery">
+  <div class="sample">
+    <h4>Easy — R3 prog_1 (EM = 100%)</h4>
+    <img src="cipher_gepa_r3/prog_1/img_s011000.jpg" alt="Easy captcha sample">
+    <div class="answer">gold: BNTAKRM</div>
+    <div class="pred">Gemini predicted: BNTAKRM ✓</div>
+    <div class="meta">α=160, font=5.5%, 2 distractors (1 yellow), key_len=7, noise σ=2, blur=0.1</div>
+  </div>
+  <div class="sample">
+    <h4>Target — R3 prog_3 (EM = 0%, near-miss)</h4>
+    <img src="cipher_gepa_r3/prog_3/img_s013001.jpg" alt="Target captcha sample">
+    <div class="answer">gold: TQ573CYX</div>
+    <div class="pred">Gemini predicted: T0573CYK ✗ (Q→0, X→K)</div>
+    <div class="meta">α=145, font=4.8%, 3 distractors (2 yellow), key_len=8, noise σ=4, blur=0.25</div>
+  </div>
+</div>
+<p><em>Observation:</em> raising noise σ from 2→4, blur from 0.1→0.25, and lowering alpha/font moves Gemini from
+perfect reading to consistent single-character errors (<code>Q→O, Q→0, X→K, 8→B, 6→G</code> on R3 prog_3). The model still
+outputs a 8-character uppercase string — it is attempting to read, not guessing.</p>
+
+<h2>2. Round summary</h2>
+<table>
+  <tr><th>Round</th><th>Programs</th><th>Samples/prog</th><th>Model</th><th>Best EM</th><th>Best fitness</th><th>Notes</th></tr>
+  <tr><td>R1</td><td>5</td><td>4</td><td>mixed (gemini/claude/codex)</td><td>100%</td><td>-0.03</td><td>Wide sweep; gemini reads, claude hallucinates, codex cannot see images</td></tr>
+  <tr><td>R2</td><td>5</td><td>4</td><td>gemini</td><td>0% / 100%</td><td>-0.03</td><td>Bimodal: 2 progs @ 100%, 3 @ 0%. Narrowed to α=130–150</td></tr>
+  <tr class="target"><td>R3</td><td>5</td><td>4</td><td>gemini</td><td>0% / 25% / 75% / 100%</td><td>-0.03</td><td><strong>Near-miss found: prog_3 EM=0% with correct length</strong></td></tr>
+  <tr class="fail"><td>R4</td><td>5</td><td>8</td><td>claude (Gemini API down)</td><td>0%</td><td>-0.03</td><td>Claude hallucinates — char-acc 2–11%, data invalid</td></tr>
+</table>
+
+<h2>3. Round 1 — wide sweep</h2>
+<p>Initial parameter exploration with a mix of VLMs to check the ceiling.</p>
+<table>
+  <tr><th>prog</th><th>model</th><th>α</th><th>font %</th><th>dist</th><th>noise</th><th>blur</th><th>EM</th><th>fit</th></tr>
+  <tr><td>0</td><td>gemini</td><td>220</td><td>10%</td><td>0</td><td>0</td><td>0</td><td><span class="metric em-high">100%</span></td><td>-0.97</td></tr>
+  <tr><td>1</td><td>claude</td><td>160</td><td>6%</td><td>3 (1y)</td><td>10</td><td>0</td><td><span class="metric em-zero">0%</span></td><td>-0.03</td></tr>
+  <tr><td>2</td><td>codex</td><td>180</td><td>6%</td><td>0</td><td>0</td><td>0</td><td><span class="metric em-zero">0%</span></td><td>-0.53 (miss)</td></tr>
+  <tr><td>3</td><td>gemini</td><td>140</td><td>5%</td><td>2 (1y)</td><td>0</td><td>0</td><td><span class="metric em-mid">50%</span></td><td>-0.47</td></tr>
+  <tr><td>4</td><td>claude</td><td>180</td><td>6%</td><td>0</td><td>0</td><td>0</td><td><span class="metric em-zero">0%</span></td><td>-0.03</td></tr>
+</table>
+<p><em>Finding:</em> gemini reads at α≥140 and font≥5%; claude/codex are not informative. From R2 onward we use
+gemini only.</p>
+
+<h2>4. Round 2 — first gemini-only sweep</h2>
+<table>
+  <tr><th>prog</th><th>α</th><th>font %</th><th>dist</th><th>noise</th><th>blur</th><th>EM</th><th>fit</th></tr>
+  <tr><td>0</td><td>130</td><td>4.5%</td><td>3 (2y)</td><td>5.0</td><td>0.3</td><td><span class="metric em-zero">0%</span></td><td>-0.03</td></tr>
+  <tr><td>1</td><td>180</td><td>6%</td><td>4 (3y)</td><td>0</td><td>0</td><td><span class="metric em-high">100%</span></td><td>-0.97</td></tr>
+  <tr><td>2</td><td>120</td><td>4%</td><td>5 (4y)</td><td>8.0</td><td>0.5</td><td><span class="metric em-zero">0%</span></td><td>-0.03</td></tr>
+  <tr><td>3</td><td>180</td><td>6%</td><td>0</td><td>0</td><td>0</td><td><span class="metric em-high">100%</span></td><td>-0.97</td></tr>
+  <tr><td>4</td><td>100</td><td>3.5%</td><td>6 (5y)</td><td>12.0</td><td>0.8</td><td><span class="metric em-zero">0%</span></td><td>-0.03</td></tr>
+</table>
+<p><em>Finding:</em> sharp 0%/100% boundary. prog_0 (α=130, 3 distractors / 2 yellow, σ=5) is 0% with correct
+length — a candidate for further narrowing.</p>
+
+<h2>5. Round 3 — narrowing around R2 prog_0/prog_1 (best round)</h2>
+<table>
+  <tr><th>prog</th><th>α</th><th>font %</th><th>key_len</th><th>dist</th><th>noise</th><th>blur</th><th>EM</th><th>fit</th><th>desc</th></tr>
+  <tr><td>0</td><td>150</td><td>5.0%</td><td>8</td><td>3 (2y)</td><td>3.0</td><td>0.20</td><td><span class="metric em-mid">25%</span></td><td>-0.22</td><td>bump of R2 prog_0</td></tr>
+  <tr><td>1</td><td>160</td><td>5.5%</td><td>7</td><td>2 (1y)</td><td>2.0</td><td>0.10</td><td><span class="metric em-high">100%</span></td><td>-0.97</td><td>weak distractors</td></tr>
+  <tr><td>2</td><td>140</td><td>5.0%</td><td>8</td><td>4 (4y)</td><td>0</td><td>0</td><td><span class="metric em-mid">25%</span></td><td>-0.22</td><td>max yellow distractors</td></tr>
+  <tr class="best"><td>3</td><td>145</td><td>4.8%</td><td>8</td><td>3 (2y)</td><td>4.0</td><td>0.25</td><td><span class="metric em-zero">0%</span> (near-miss)</td><td>-0.03</td><td><strong>best near-miss</strong></td></tr>
+  <tr><td>4</td><td>155</td><td>5.2%</td><td>7</td><td>3 (3y)</td><td>2.0</td><td>0.15</td><td><span class="metric em-mid">75%</span></td><td>-0.72</td><td>all-yellow stress</td></tr>
+</table>
+<p><em>Finding:</em> prog_3 delivers 0% EM with predictions of the correct length (8 characters) — the model is
+reading but getting confused on single characters. Confusion pairs observed on R3 prog_3:
+<code>Q→O, Q→0, X→K, 8→B, 6→G</code>. This is the ideal starting point for R4: loosen slightly.</p>
+
+<h2>6. Round 4 — 8-sample push toward 3% (invalidated)</h2>
+<div class="warn">
+<strong>Problem:</strong> all Gemini API calls returned errors immediately (0 tool calls, has_errors=true).
+A single-agent retry produced the same failure — the Gemini proxy/quota was unavailable. We fell back to
+Claude via Swarm, but per <code>project_swarm_eval.md</code> memory, <em>Claude hallucinates on captchas</em>.
+</div>
+<table>
+  <tr><th>prog</th><th>α</th><th>font %</th><th>dist</th><th>noise</th><th>blur</th><th>EM (claude)</th><th>char-acc</th></tr>
+  <tr><td>0</td><td>148</td><td>4.90%</td><td>3 (2y)</td><td>3.5</td><td>0.22</td><td><span class="metric em-zero">0%</span></td><td>9%</td></tr>
+  <tr><td>1</td><td>147</td><td>4.85%</td><td>3 (2y)</td><td>3.8</td><td>0.23</td><td><span class="metric em-zero">0%</span></td><td>3%</td></tr>
+  <tr><td>2</td><td>146</td><td>4.90%</td><td>4 (3y)</td><td>3.0</td><td>0.20</td><td><span class="metric em-zero">0%</span></td><td>2%</td></tr>
+  <tr><td>3</td><td>149</td><td>4.95%</td><td>3 (2y)</td><td>3.0</td><td>0.20</td><td><span class="metric em-zero">0%</span></td><td>8%</td></tr>
+  <tr><td>4</td><td>145</td><td>4.90%</td><td>4 (4y)</td><td>2.0</td><td>0.15</td><td><span class="metric em-zero">0%</span></td><td>11%</td></tr>
+</table>
+<p><em>Representative hallucinations:</em></p>
+<pre>gold=D79ARJ7P  pred=V76J0002   (prog_1 / img_s021000)
+gold=MTUYC4KK  pred=5H0K5140   (prog_1 / img_s021002)
+gold=EFTH2F5Q  pred=UHK4FYT7   (prog_1 / img_s021003)</pre>
+<p>Not a single character lands in the correct position — the model fabricates keys instead of reading them.
+<strong>The R4 images are valid and are retained for re-evaluation when Gemini is back.</strong></p>
+
+<h2>7. Parameter trajectory across rounds</h2>
+<table>
+  <tr><th>Param</th><th>R1 best</th><th>R2 best near-miss</th><th>R3 best near-miss</th><th>R4 (not evaluated)</th></tr>
+  <tr><td>alpha</td><td>220 → 140</td><td>130</td><td>145</td><td>145–149</td></tr>
+  <tr><td>font %</td><td>5–10%</td><td>4.5%</td><td>4.8%</td><td>4.85–4.95%</td></tr>
+  <tr><td>distractors</td><td>0–3</td><td>3 (2y)</td><td>3 (2y)</td><td>3–4 (2–4y)</td></tr>
+  <tr><td>noise σ</td><td>0</td><td>5.0</td><td>4.0</td><td>2–4</td></tr>
+  <tr><td>blur</td><td>0</td><td>0.3</td><td>0.25</td><td>0.15–0.23</td></tr>
+</table>
+
+<h2>8. Next steps</h2>
+<ol>
+  <li><strong>Re-score R4 on Gemini</strong> once the API is back: images live in
+  <code>eval/gepa_rounds/cipher_gepa_r4/prog_{0-4}/</code>, <code>batches.json</code> is ready — just run
+  the Swarm gemini agents and feed the existing <code>score.py</code>.</li>
+  <li>If R4 does not hit 3%, plan R5 around R3 prog_3 (α=145, font=4.8%, σ=4, blur=0.25) with more samples (n=16).</li>
+  <li>Automate the loop: orchestration is currently manual (the Gemini reflection agent hung in R1/R3).
+  Replace the reflection component of GEPA with Opus, or with a pure numerical Nevergrad sweep over the identified
+  region.</li>
+</ol>
+
+<h2>9. Report layout</h2>
+<pre>eval/gepa_rounds/
+  cipher_gepa_r1/   # R1: 5 progs × 4 samples, mixed models
+  cipher_gepa_r2/   # R2: 5 × 4, gemini only
+  cipher_gepa_r3/   # R3: 5 × 4, best round (prog_3 — near-miss)
+  cipher_gepa_r4/   # R4: 5 × 8, invalid (claude instead of gemini)
+  report.html       # this file</pre>
+<p>Each subdirectory contains <code>batches.json</code> (genomes + image paths), <code>pred_prog{N}.json</code>
+(predictions), <code>scores.json</code> (metrics), <code>score.py</code>, and a <code>prog_{0-4}/</code> folder
+with the JPG captchas. R3/R4 also ship their <code>generate.py</code>.</p>
+
+<hr>
+<p><em>Generated: 2026-04-14. Target EM: 3%. Best candidate: R3 prog_3 (α=145, font=4.8%, 3 distractors / 2 yellow,
+noise σ=4, blur=0.25).</em></p>
+
+</body>
+</html>

@@ -135,6 +135,8 @@ REGISTRY = {
     "sonnet":         lambda: anthropic_claude("claude-sonnet-4-6"),
     "gpt-4o-mini":    lambda: openai_gpt("gpt-4o-mini"),
     "gpt-4o":         lambda: openai_gpt("gpt-4o"),
+    "gpt-5.4-mini":   lambda: openai_gpt("gpt-5.4-mini"),
+    "gpt-5.4":        lambda: openai_gpt("gpt-5.4"),
     "gemini-flash":   lambda: google_gemini("gemini-2.0-flash"),
     "gemini-pro":     lambda: google_gemini("gemini-1.5-pro"),
     # OCR-only baseline (no VLM)

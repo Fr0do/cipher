@@ -4,14 +4,24 @@ Ralph mode tasks for CIPHER. Each item is independent — safe for autonomous ex
 
 ## Active backlog
 
+### Overnight results (check first!)
+- [ ] **check-overnight**: Check `/tmp/cipher_overnight/results.json` and `/tmp/cipher_overnight_yellow_ocr.log`. The overnight script (PID 97453) generates 20 samples/level and runs OCR baseline. Yellow-OCR (PID 62302) evaluates with color-filtered OCR. Report: how many samples done, EM rates, disk usage.
+- [ ] **compile-cal-table**: Compile multi-model calibration table from overnight results + previous Haiku cal3 data (`/tmp/cipher_cal3.json`). Include: OCR-only, Yellow-OCR, Haiku (cal3), Sonnet, target EM. Identify levels needing adjustment.
+
+### S3 agent evaluation (GIVE VIDEO, NOT FRAMES)
+- [ ] **eval-haiku-video**: For each sample in `/tmp/cipher_overnight/results.json`, spawn Haiku subagent with: scrambled_video path, nl_instructions, and Bash access. Agent runs ffmpeg to correct video, then extracts frames and finds yellow key. NO gold key or ops in prompt.
+- [ ] **eval-sonnet-video**: Same as above but with Sonnet subagent.
+- [ ] **eval-codex-video**: Spawn Swarm codex agent (effort=detailed) with same task.
+- [ ] **eval-gemini-video**: Spawn Swarm gemini agent with same task.
+- [ ] **eval-mcp-skill**: Run `solve_captcha.py --video <scrambled> --instructions <nl>` for each sample. This IS the MCP skill baseline.
+
+### Benchmark generation
 - [ ] **fetch-backgrounds**: run `bash scripts/fetch_backgrounds.sh`, verify ≥10 videos in `data/backgrounds/`
-- [ ] **generate-l1-l3**: `python run_cipher.py generate --videos data/backgrounds/ --n 50 --levels L1 L2 L3`
-- [ ] **generate-l4-l5**: `python run_cipher.py generate --videos data/backgrounds/ --n 50 --levels L4 L5`
-- [ ] **bench-ocr-only**: `python run_cipher.py bench --model ocr-only --manifest data/manifest.json`
-- [ ] **bench-haiku**: `python run_cipher.py bench --model haiku --manifest data/manifest.json`
-- [ ] **bench-gpt4o-mini**: `python run_cipher.py bench --model gpt-4o-mini --manifest data/manifest.json`
-- [ ] **bench-gemini-flash**: `python run_cipher.py bench --model gemini-flash --manifest data/manifest.json`
-- [ ] **commit-runs**: `git add runs/ && git commit -m "[results] Add <model> benchmark results"`
+- [ ] **generate-full**: `python run_cipher.py generate --videos data/backgrounds/ --n 50 --levels L1 L2 L3 L4 L5`
+
+### Paper
+- [ ] **fill-results-table**: Fill sections/04_experiments.tex with calibration results
+- [ ] **commit-runs**: `git add runs/ && git commit -m "[results] Add calibration results"`
 
 ## Stop conditions
 

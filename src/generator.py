@@ -41,11 +41,13 @@ from PIL import Image, ImageDraw, ImageFont
 
 LEVELS = {
     # distractor: 0=none, 1=1 fake string, 2=2 fakes, 3=2 fakes + color similar to key
+    # nl_ambiguity: 1=canonical, 2=paraphrase, 3=reversed desc, 4=compositional
+    # NOTE: nl_ambiguity=4 breaks regex S1 parse; use max=3 for scoreable calibration
     "L1": dict(key_visibility=1, op_count=1, nl_ambiguity=1, distractor=0),
-    "L2": dict(key_visibility=2, op_count=2, nl_ambiguity=1, distractor=0),
-    "L3": dict(key_visibility=3, op_count=2, nl_ambiguity=2, distractor=1),
-    "L4": dict(key_visibility=3, op_count=3, nl_ambiguity=3, distractor=2),
-    "L5": dict(key_visibility=4, op_count=4, nl_ambiguity=4, distractor=3),
+    "L2": dict(key_visibility=1, op_count=2, nl_ambiguity=1, distractor=0),
+    "L3": dict(key_visibility=2, op_count=2, nl_ambiguity=2, distractor=1),
+    "L4": dict(key_visibility=2, op_count=3, nl_ambiguity=2, distractor=2),
+    "L5": dict(key_visibility=3, op_count=4, nl_ambiguity=3, distractor=3),
     # L6 (QR/morse): reserved for future work
 }
 
@@ -59,24 +61,26 @@ OPS = [
         "name": "reverse",
         "vf": "reverse", "af": "areverse",
         "inverse_vf": "reverse", "inverse_af": "areverse",
+        # All phrases parseable by regex: \breverse\b, play.*in reverse, \bbackward\b
         "nl": [
             "reverse the video",
-            "play it backwards",
             "play the video in reverse",
-            "flip the timeline",
-            "the video is played in reverse order",
+            "run the video backward",
+            "reverse it",
+            "play it backward",
         ],
     },
     {
         "name": "hflip",
         "vf": "hflip", "af": None,
         "inverse_vf": "hflip", "inverse_af": None,
+        # All phrases parseable by regex: flip.*horizontally, mirror.*left.to.right, horizontal.*flip
         "nl": [
             "flip the video horizontally",
             "mirror the video left to right",
             "apply a horizontal mirror",
             "flip it left-right",
-            "the video has been horizontally mirrored",
+            "horizontally flip the video",
         ],
     },
     {
@@ -95,24 +99,28 @@ OPS = [
         "name": "rotate90",
         "vf": "transpose=1", "af": None,
         "inverse_vf": "transpose=2", "inverse_af": None,
+        # Scramble uses inverse (CCW), so NL tells agent to apply CW to restore.
+        # All phrases must parse to {op:"rotate", degrees:90} via regex.
         "nl": [
             "rotate the video 90 degrees clockwise",
-            "rotate it 90° to the right",
+            "rotate it 90 degrees clockwise",
             "turn the video clockwise by 90 degrees",
-            "the video was rotated 90° counter-clockwise, fix it",
             "rotate 90 degrees clockwise",
+            "rotate the video 90°",
         ],
     },
     {
         "name": "rotate270",
         "vf": "transpose=2", "af": None,
         "inverse_vf": "transpose=1", "inverse_af": None,
+        # Scramble uses inverse (CW), so NL tells agent to apply CCW (270°) to restore.
+        # All phrases must parse to {op:"rotate", degrees:270} via regex.
         "nl": [
             "rotate the video 270 degrees clockwise",
-            "rotate it 90° to the left",
-            "turn the video counter-clockwise by 90 degrees",
-            "the video was rotated 90° clockwise, undo it",
+            "rotate it 270 degrees clockwise",
+            "turn the video clockwise by 270 degrees",
             "rotate 270 degrees clockwise",
+            "rotate the video 270°",
         ],
     },
     {
@@ -131,12 +139,14 @@ OPS = [
         "name": "speed2x",
         "vf": "setpts=0.5*PTS", "af": "atempo=2.0",
         "inverse_vf": "setpts=2.0*PTS", "inverse_af": "atempo=0.5",
+        # Scramble uses 0.5x (inverse), so NL tells agent to apply 2x (restore).
+        # All phrases parseable by regex: speed\s+up.*2x, double.*speed, 2x\s+speed
         "nl": [
             "speed up the video 2x",
             "double the playback speed",
-            "make the video play twice as fast",
-            "the video is at half speed, fix it",
+            "speed it up 2x",
             "apply 2x speed",
+            "speed up 2x",
         ],
     },
 ]
@@ -217,13 +227,15 @@ def embed_key_overlay(
     except Exception:
         w, h = 640, 360
 
-    # Key rendering params by visibility level
+    # Key rendering params by visibility level.
+    # KEY is ALWAYS bright yellow — the unambiguous signal. Only alpha/size/position vary.
+    # Distractors use different colors (never yellow) and are always smaller + dimmer.
     vis_params = {
-        1: dict(fontsize=int(h * 0.12), color=(255, 255, 0), alpha=255, x_frac=0.5, y_frac=0.5),
-        2: dict(fontsize=int(h * 0.08), color=(255, 255, 255), alpha=220, x_frac=rng.uniform(0.3, 0.7), y_frac=rng.uniform(0.3, 0.7)),
-        3: dict(fontsize=int(h * 0.06), color=(200, 200, 200), alpha=180, x_frac=rng.uniform(0.2, 0.8), y_frac=rng.uniform(0.2, 0.8)),
-        4: dict(fontsize=int(h * 0.05), color=(180, 180, 180), alpha=140, x_frac=rng.uniform(0.1, 0.9), y_frac=rng.uniform(0.1, 0.9)),
-        5: None,  # QR / morse — handled separately
+        1: dict(fontsize=int(h * 0.13), color=(255, 255, 0), alpha=255, x_frac=0.5,               y_frac=0.5),
+        2: dict(fontsize=int(h * 0.10), color=(255, 255, 0), alpha=240, x_frac=rng.uniform(0.3, 0.7), y_frac=rng.uniform(0.3, 0.7)),
+        3: dict(fontsize=int(h * 0.07), color=(255, 255, 0), alpha=200, x_frac=rng.uniform(0.2, 0.8), y_frac=rng.uniform(0.2, 0.8)),
+        4: dict(fontsize=int(h * 0.06), color=(255, 255, 0), alpha=170, x_frac=rng.uniform(0.1, 0.9), y_frac=rng.uniform(0.1, 0.9)),
+        5: None,  # QR / morse — reserved
     }
     params = vis_params[min(key_visibility, 4)]
 
@@ -267,35 +279,53 @@ def embed_key_overlay(
     overlay_path = tempfile.mktemp(suffix="_overlay.png")
     overlay.save(overlay_path)
 
-    # Build distractors — fake strings at non-overlapping time windows
+    # Build distractors.
+    # Invariants (so VLM can use heuristics to find the real key):
+    #   - Distractors are NEVER yellow (reserved for key)
+    #   - Distractor font <= 80% of key font size
+    #   - Distractor alpha <= key_alpha - 40
+    #   - Distractor window duration < key duration
+    #   - L5 only: one distractor is white (close to key at visibility=4) — hardest case
     distractor_overlays = []
-    clip_dur = end_t + 2.0  # rough upper bound
-    distractor_palette = [(255, 200, 100), (180, 255, 180), (200, 180, 255)]
+    key_duration = end_t - start_t
+    clip_dur = end_t + 3.0  # safe upper bound for distractor placement
+    # Colors for distractors: cyan, green, magenta — never yellow
+    distractor_palette = [(0, 220, 255), (80, 255, 80), (255, 100, 255)]
+    d_font_size = max(10, int(params["fontsize"] * 0.70))
+    d_alpha_max = max(80, params["alpha"] - 50)
+
+    try:
+        d_font = ImageFont.truetype(font._file, d_font_size) if font else None
+    except Exception:
+        d_font = font
 
     for d_idx in range(n_distractors):
-        # Pick a non-overlapping window
-        if d_idx == 0:
-            d_start = max(0.0, start_t - rng.uniform(1.5, 3.0))
-            d_end = d_start + rng.uniform(1.5, 3.0)
-            if d_end >= start_t:
-                d_start = end_t + rng.uniform(0.3, 1.5)
-                d_end = d_start + rng.uniform(1.5, 2.5)
+        # Place distractor in a non-overlapping window, strictly shorter than key
+        d_duration = rng.uniform(0.8, min(1.8, key_duration - 0.5))
+        if d_idx % 2 == 0:
+            # Before key
+            d_end = max(d_duration + 0.2, start_t - rng.uniform(0.3, 1.0))
+            d_start = d_end - d_duration
         else:
-            d_start = end_t + rng.uniform(0.5 + d_idx, 1.5 + d_idx)
-            d_end = d_start + rng.uniform(1.5, 2.5)
+            # After key
+            d_start = end_t + rng.uniform(0.3, 1.0)
+            d_end = d_start + d_duration
+        d_start = max(0.0, d_start)
 
-        fake_key = _random_key(rng, rng.randint(5, 8))
-        d_color = distractor_palette[d_idx % len(distractor_palette)]
-        if n_distractors >= 3:  # L5: make one distractor same color as key
-            d_color = params["color"]
+        fake_key = _random_key(rng, rng.randint(4, 6))  # shorter than real key (7)
+        if n_distractors >= 3 and d_idx == 0:
+            # L5: first distractor is white (harder to distinguish from key)
+            d_color = (220, 220, 220)
+        else:
+            d_color = distractor_palette[d_idx % len(distractor_palette)]
 
         d_overlay = Image.new("RGBA", (w, h), (0, 0, 0, 0))
         d_draw = ImageDraw.Draw(d_overlay)
-        dx = int(rng.uniform(0.1, 0.85) * w)
-        dy = int(rng.uniform(0.1, 0.85) * h)
-        d_alpha = rng.randint(120, 200)
-        d_draw.text((dx + 2, dy + 2), fake_key, fill=(0, 0, 0, d_alpha), font=font)
-        d_draw.text((dx, dy), fake_key, fill=(*d_color, d_alpha), font=font)
+        dx = int(rng.uniform(0.05, 0.80) * w)
+        dy = int(rng.uniform(0.05, 0.80) * h)
+        d_alpha = rng.randint(max(60, d_alpha_max - 40), d_alpha_max)
+        d_draw.text((dx + 2, dy + 2), fake_key, fill=(0, 0, 0, d_alpha), font=d_font)
+        d_draw.text((dx, dy), fake_key, fill=(*d_color, d_alpha), font=d_font)
         d_path = tempfile.mktemp(suffix=f"_distractor{d_idx}.png")
         d_overlay.save(d_path)
         distractor_overlays.append((d_path, d_start, min(d_end, clip_dur - 0.1)))
@@ -363,26 +393,42 @@ def embed_key_qr(input_video: str, output_video: str, key: str, start_t: float, 
 # ffmpeg edit chain
 # ---------------------------------------------------------------------------
 
-def apply_ops(input_video: str, output_video: str, ops: list[dict]) -> None:
-    """Apply a sequence of ops to a video, chaining through temp files."""
+def apply_ops(input_video: str, output_video: str, ops: list[dict], invert: bool = False) -> None:
+    """Apply a sequence of ops to a video, chaining through temp files.
+
+    If invert=True, applies the inverse operations in reversed order.
+    Use invert=True for scrambling so that NL instructions describe what the
+    agent should apply (forward ops) to restore the original.
+
+    For involutions (reverse, hflip, vflip): forward == inverse, no difference.
+    For speed2x: invert applies 0.5x so NL "speed up 2x" correctly restores.
+    For rotate90 CW: invert applies CCW so NL "rotate CW" correctly restores.
+    """
     src = input_video
     tmp_files = []
 
-    for i, op in enumerate(ops):
-        is_last = (i == len(ops) - 1)
+    # When inverting, apply ops in reversed order (B⁻¹ then A⁻¹ undoes A then B)
+    ops_seq = list(reversed(ops)) if invert else ops
+
+    for i, op in enumerate(ops_seq):
+        is_last = (i == len(ops_seq) - 1)
         dst = output_video if is_last else tempfile.mktemp(suffix=f"_step{i}.mp4")
         if not is_last:
             tmp_files.append(dst)
 
-        vf = op["vf"]
-        af = op.get("af")
+        if invert:
+            vf = op.get("inverse_vf") or op["vf"]   # fallback to forward for involutions
+            af = op.get("inverse_af") if "inverse_af" in op else op.get("af")
+        else:
+            vf = op["vf"]
+            af = op.get("af")
 
         cmd = ["ffmpeg", "-y", "-i", src]
         if vf:
             cmd += ["-vf", vf]
         if af:
             cmd += ["-af", af]
-        elif not af and vf:
+        elif vf:
             cmd += ["-c:a", "copy"]
         cmd.append(dst)
 
@@ -526,9 +572,10 @@ def generate_sample(
                       cfg["key_visibility"], key_start, key_end, rng,
                       n_distractors=cfg["distractor"])
 
-    # 5. Apply scramble ops
+    # 5. Apply scramble ops using INVERSE so NL describes the forward correction.
+    # e.g. speed2x scramble → apply 0.5x; agent sees "speed up 2x" and restores.
     scrambled_path = os.path.join(output_dir, f"{sample_id}_scrambled.mp4")
-    apply_ops(keyed_path, scrambled_path, chosen_ops)
+    apply_ops(keyed_path, scrambled_path, chosen_ops, invert=True)
 
     # 6. NL instructions
     instructions = build_instructions(chosen_ops, cfg["nl_ambiguity"], rng)

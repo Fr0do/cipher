@@ -1,0 +1,9 @@
+# CIPHER eval — minimal deps
+anthropic>=0.40
+openai>=1.50
+google-generativeai>=0.8
+Pillow>=10.0
+numpy>=1.26
+easyocr>=1.7
+pyzbar>=0.1.9
+scipy>=1.12

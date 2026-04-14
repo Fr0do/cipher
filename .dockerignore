@@ -1,0 +1,9 @@
+data/
+runs/
+.git/
+__pycache__/
+*.pyc
+.env
+*.mp4
+*.avi
+*.mov

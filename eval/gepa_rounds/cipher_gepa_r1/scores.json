@@ -1,0 +1,87 @@
+[
+  {
+    "program_idx": 0,
+    "model": "gemini",
+    "em": 1.0,
+    "matches": 4,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.97,
+    "params": {
+      "fontsize_pct": 0.1,
+      "alpha": 220,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 1,
+    "model": "claude",
+    "em": 0.0,
+    "matches": 0,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.03,
+    "params": {
+      "fontsize_pct": 0.06,
+      "alpha": 160,
+      "n_distractors": 3,
+      "yellow_distractors": 1,
+      "noise_sigma": 10.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 2,
+    "model": "codex",
+    "em": 0.0,
+    "matches": 0,
+    "n": 4,
+    "missing": 4,
+    "fitness": -0.53,
+    "params": {
+      "fontsize_pct": 0.06,
+      "alpha": 180,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 3,
+    "model": "gemini",
+    "em": 0.5,
+    "matches": 2,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.47,
+    "params": {
+      "fontsize_pct": 0.05,
+      "alpha": 140,
+      "n_distractors": 2,
+      "yellow_distractors": 1,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 4,
+    "model": "claude",
+    "em": 0.0,
+    "matches": 0,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.03,
+    "params": {
+      "fontsize_pct": 0.06,
+      "alpha": 180,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  }
+]

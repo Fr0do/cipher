@@ -1,0 +1,97 @@
+[
+  {
+    "program_idx": 0,
+    "model": "gemini",
+    "em": 0.25,
+    "matches": 1,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.22,
+    "params": {
+      "alpha": 150,
+      "fontsize_pct": 0.05,
+      "key_length": 8,
+      "n_distractors": 3,
+      "yellow_distractors": 2,
+      "noise_sigma": 3.0,
+      "blur_radius": 0.2
+    },
+    "desc": "prog_0 + bump alpha to 150, font to 5%"
+  },
+  {
+    "program_idx": 1,
+    "model": "gemini",
+    "em": 1.0,
+    "matches": 4,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.97,
+    "params": {
+      "alpha": 160,
+      "fontsize_pct": 0.055,
+      "key_length": 7,
+      "n_distractors": 2,
+      "yellow_distractors": 1,
+      "noise_sigma": 2.0,
+      "blur_radius": 0.1
+    },
+    "desc": "\u03b1=160, font=5.5%, 2 distractors, minimal noise"
+  },
+  {
+    "program_idx": 2,
+    "model": "gemini",
+    "em": 0.25,
+    "matches": 1,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.22,
+    "params": {
+      "alpha": 140,
+      "fontsize_pct": 0.05,
+      "key_length": 8,
+      "n_distractors": 4,
+      "yellow_distractors": 4,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    },
+    "desc": "\u03b1=140, font=5%, 4 yellow distractors, no noise \u2014 distractor confusion test"
+  },
+  {
+    "program_idx": 3,
+    "model": "gemini",
+    "em": 0.0,
+    "matches": 0,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.03,
+    "params": {
+      "alpha": 145,
+      "fontsize_pct": 0.048,
+      "key_length": 8,
+      "n_distractors": 3,
+      "yellow_distractors": 2,
+      "noise_sigma": 4.0,
+      "blur_radius": 0.25
+    },
+    "desc": "\u03b1=145, font=4.8%, 3 dist (2 yellow), noise=4, blur=0.25 \u2014 fine-tuned mid"
+  },
+  {
+    "program_idx": 4,
+    "model": "gemini",
+    "em": 0.75,
+    "matches": 3,
+    "n": 4,
+    "missing": 0,
+    "fitness": -0.72,
+    "params": {
+      "alpha": 155,
+      "fontsize_pct": 0.052,
+      "key_length": 7,
+      "n_distractors": 3,
+      "yellow_distractors": 3,
+      "noise_sigma": 2.0,
+      "blur_radius": 0.15
+    },
+    "desc": "\u03b1=155, font=5.2%, 3 dist (3 yellow), noise=2 \u2014 all-yellow distractor stress"
+  }
+]

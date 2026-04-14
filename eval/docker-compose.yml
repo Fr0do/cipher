@@ -1,0 +1,58 @@
+services:
+  # OCR-only baseline (no API key needed)
+  ocr:
+    build:
+      context: ..
+      dockerfile: eval/Dockerfile
+    volumes:
+      - ../data:/data:ro
+      - ../runs:/runs
+    command: ["--manifest", "/data/manifest.json", "--model", "ocr-only", "--runs-dir", "/runs"]
+
+  # Claude Haiku
+  haiku:
+    build:
+      context: ..
+      dockerfile: eval/Dockerfile
+    environment:
+      - ANTHROPIC_API_KEY
+    volumes:
+      - ../data:/data:ro
+      - ../runs:/runs
+    command: ["--manifest", "/data/manifest.json", "--model", "haiku", "--runs-dir", "/runs"]
+
+  # Claude Sonnet
+  sonnet:
+    build:
+      context: ..
+      dockerfile: eval/Dockerfile
+    environment:
+      - ANTHROPIC_API_KEY
+    volumes:
+      - ../data:/data:ro
+      - ../runs:/runs
+    command: ["--manifest", "/data/manifest.json", "--model", "sonnet", "--runs-dir", "/runs"]
+
+  # GPT-4o
+  gpt4o:
+    build:
+      context: ..
+      dockerfile: eval/Dockerfile
+    environment:
+      - OPENAI_API_KEY
+    volumes:
+      - ../data:/data:ro
+      - ../runs:/runs
+    command: ["--manifest", "/data/manifest.json", "--model", "gpt-4o", "--runs-dir", "/runs"]
+
+  # Gemini Flash
+  gemini:
+    build:
+      context: ..
+      dockerfile: eval/Dockerfile
+    environment:
+      - GOOGLE_API_KEY
+    volumes:
+      - ../data:/data:ro
+      - ../runs:/runs
+    command: ["--manifest", "/data/manifest.json", "--model", "gemini-flash", "--runs-dir", "/runs"]

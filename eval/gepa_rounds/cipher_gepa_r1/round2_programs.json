@@ -1,0 +1,14 @@
+{
+  "reasoning": "Round 1 analysis: prog_3 (Gemini EM=50%) is closest to target 3%. Errors are char-level confusion (Q/O, B/8). Strategy: (1) slightly reduce visibility from prog_3 baseline, (2) increase yellow distractors to confuse, (3) add slight blur, (4) use $-params for Nevergrad fine-tuning. Programs ordered from conservative tweak to experimental.",
+  "programs": [
+    "(seq\n  (overlay-key :alpha 130 :font-pct 0.045 :position edge :key-len 8)\n  (scramble reverse hflip)\n  (distractor :n 3 :yellow 2 :same-length true)\n  (noise :sigma 5)\n  (blur :radius 0.3)\n  (shadow true))",
+
+    "(seq\n  (overlay-key :alpha $alpha :font-pct $font_pct :position corner :key-len 7)\n  (scramble reverse vflip)\n  (distractor :n 4 :yellow 3 :same-length true)\n  (noise :sigma $noise)\n  (blur :radius $blur)\n  (shadow true))",
+
+    "(seq\n  (overlay-key :alpha 120 :font-pct 0.04 :position edge :key-len 9 :font 2)\n  (scramble reverse hflip speed2x)\n  (distractor :n 5 :yellow 4 :same-length true)\n  (noise :sigma 8)\n  (blur :radius 0.5)\n  (shadow false))",
+
+    "(seq\n  (overlay-key :alpha $alpha :font-pct $font_pct :position corner :key-len 7)\n  (scramble reverse hflip)\n  (distractor :n $n_dist :yellow $n_yellow :same-length true)\n  (gate (text-captcha \"compute: 13+29\") :on-fail blur-key)\n  (noise :sigma $noise)\n  (blur :radius $blur)\n  (shadow true))",
+
+    "(seq\n  (overlay-key :alpha 100 :font-pct 0.035 :position edge :key-len 10 :font 3)\n  (scramble reverse hflip vflip)\n  (distractor :n 6 :yellow 5 :same-length true)\n  (noise :sigma 12)\n  (blur :radius 0.8)\n  (nl-ambiguity 3)\n  (shadow false))"
+  ]
+}

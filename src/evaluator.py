@@ -20,15 +20,28 @@ from pathlib import Path
 from dataclasses import dataclass, asdict, field
 from typing import Optional
 
-# Locate solve_captcha relative to this file
-_SKILL_SCRIPTS = Path(__file__).parent.parent.parent.parent / \
-    ".hermes" / "skills" / "media" / "video-captcha-solver" / "scripts"
+# Locate solve_captcha: prefer CIPHER_SKILL_DIR env (container), fallback to ~/.hermes
+_SKILL_SCRIPTS = Path(os.environ.get(
+    "CIPHER_SKILL_DIR",
+    str(Path(__file__).parent.parent.parent.parent /
+        ".hermes" / "skills" / "media" / "video-captcha-solver" / "scripts")
+))
 sys.path.insert(0, str(_SKILL_SCRIPTS))
 
 
 # ---------------------------------------------------------------------------
 # Stage 1: op-parse F1
 # ---------------------------------------------------------------------------
+
+def _normalize_op(name: str) -> str:
+    """Normalize op names so parse results match generator names.
+    parse_instructions returns 'rotate' (generic); generator stores 'rotate90'/'rotate270'.
+    Normalize both to 'rotate' for F1 comparison.
+    """
+    if name.startswith("rotate"):
+        return "rotate"
+    return name
+
 
 def op_parse_f1(pred_ops: list[str], gold_ops: list[str]) -> float:
     """
@@ -40,10 +53,13 @@ def op_parse_f1(pred_ops: list[str], gold_ops: list[str]) -> float:
     if not pred_ops or not gold_ops:
         return 0.0
 
+    pred_norm = [_normalize_op(p) for p in pred_ops]
+    gold_norm = [_normalize_op(g) for g in gold_ops]
+
     # Ordered comparison (positional)
-    correct = sum(p == g for p, g in zip(pred_ops, gold_ops))
-    prec = correct / len(pred_ops)
-    rec = correct / len(gold_ops)
+    correct = sum(p == g for p, g in zip(pred_norm, gold_norm))
+    prec = correct / len(pred_norm)
+    rec = correct / len(gold_norm)
     if prec + rec == 0:
         return 0.0
     return 2 * prec * rec / (prec + rec)

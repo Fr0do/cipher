@@ -1,0 +1,97 @@
+[
+  {
+    "program_idx": 0,
+    "em": 0.0,
+    "char_acc": 0.09375,
+    "matches": 0,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "\u03b1=148, font=4.9%, 3dist(2y), noise=3.5, blur=0.22 \u2014 midpoint prog3\u2194prog0",
+    "params": {
+      "alpha": 148,
+      "fontsize_pct": 0.049,
+      "key_length": 8,
+      "n_distractors": 3,
+      "yellow_distractors": 2,
+      "noise_sigma": 3.5,
+      "blur_radius": 0.22
+    }
+  },
+  {
+    "program_idx": 1,
+    "em": 0.0,
+    "char_acc": 0.03125,
+    "matches": 0,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "\u03b1=147, font=4.85%, 3dist(2y), noise=3.8, blur=0.23 \u2014 lean toward prog3",
+    "params": {
+      "alpha": 147,
+      "fontsize_pct": 0.0485,
+      "key_length": 8,
+      "n_distractors": 3,
+      "yellow_distractors": 2,
+      "noise_sigma": 3.8,
+      "blur_radius": 0.23
+    }
+  },
+  {
+    "program_idx": 2,
+    "em": 0.0,
+    "char_acc": 0.015625,
+    "matches": 0,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "\u03b1=146, font=4.9%, 4dist(3y), noise=3, blur=0.2 \u2014 more yellow distractors",
+    "params": {
+      "alpha": 146,
+      "fontsize_pct": 0.049,
+      "key_length": 8,
+      "n_distractors": 4,
+      "yellow_distractors": 3,
+      "noise_sigma": 3.0,
+      "blur_radius": 0.2
+    }
+  },
+  {
+    "program_idx": 3,
+    "em": 0.0,
+    "char_acc": 0.078125,
+    "matches": 0,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "\u03b1=149, font=4.95%, 3dist(2y), noise=3, blur=0.2 \u2014 slightly easier than midpoint",
+    "params": {
+      "alpha": 149,
+      "fontsize_pct": 0.0495,
+      "key_length": 8,
+      "n_distractors": 3,
+      "yellow_distractors": 2,
+      "noise_sigma": 3.0,
+      "blur_radius": 0.2
+    }
+  },
+  {
+    "program_idx": 4,
+    "em": 0.0,
+    "char_acc": 0.109375,
+    "matches": 0,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "\u03b1=145, font=4.9%, 4dist(4y), noise=2, blur=0.15 \u2014 max yellow distractor confusion",
+    "params": {
+      "alpha": 145,
+      "fontsize_pct": 0.049,
+      "key_length": 8,
+      "n_distractors": 4,
+      "yellow_distractors": 4,
+      "noise_sigma": 2.0,
+      "blur_radius": 0.15
+    }
+  }
+]

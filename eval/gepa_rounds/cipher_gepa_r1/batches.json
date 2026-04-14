@@ -1,0 +1,177 @@
+[
+  {
+    "program_idx": 0,
+    "program": "(seq\n  (overlay-key :alpha 220 :font-pct 0.10 :dur 3.0 :position center)\n  (scramble reverse)\n  (shadow true))",
+    "model": "gemini",
+    "samples": [
+      {
+        "sample_id": "img_s000000",
+        "image_path": "/tmp/cipher_gepa_r1/prog_0/img_s000000.jpg",
+        "gold_key": "52PJSN3"
+      },
+      {
+        "sample_id": "img_s000001",
+        "image_path": "/tmp/cipher_gepa_r1/prog_0/img_s000001.jpg",
+        "gold_key": "E52JRQW"
+      },
+      {
+        "sample_id": "img_s000002",
+        "image_path": "/tmp/cipher_gepa_r1/prog_0/img_s000002.jpg",
+        "gold_key": "88BC4ZX"
+      },
+      {
+        "sample_id": "img_s000003",
+        "image_path": "/tmp/cipher_gepa_r1/prog_0/img_s000003.jpg",
+        "gold_key": "HTMVWCA"
+      }
+    ],
+    "genome_summary": {
+      "fontsize_pct": 0.1,
+      "alpha": 220,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 1,
+    "program": "(seq\n  (overlay-key :alpha 160 :font-pct 0.06 :dur 2.0 :position random :flash-hz 2.0)\n  (scramble reverse hflip)\n  (distractor :n 3 :yellow 1)\n  (noise :sigma 10)\n  (shadow true))",
+    "model": "claude",
+    "samples": [
+      {
+        "sample_id": "img_s001000",
+        "image_path": "/tmp/cipher_gepa_r1/prog_1/img_s001000.jpg",
+        "gold_key": "2XDMQT9"
+      },
+      {
+        "sample_id": "img_s001001",
+        "image_path": "/tmp/cipher_gepa_r1/prog_1/img_s001001.jpg",
+        "gold_key": "3B25C63"
+      },
+      {
+        "sample_id": "img_s001002",
+        "image_path": "/tmp/cipher_gepa_r1/prog_1/img_s001002.jpg",
+        "gold_key": "SPHERWV"
+      },
+      {
+        "sample_id": "img_s001003",
+        "image_path": "/tmp/cipher_gepa_r1/prog_1/img_s001003.jpg",
+        "gold_key": "RMZQQAL"
+      }
+    ],
+    "genome_summary": {
+      "fontsize_pct": 0.06,
+      "alpha": 160,
+      "n_distractors": 3,
+      "yellow_distractors": 1,
+      "noise_sigma": 10.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 2,
+    "program": "(seq\n  (overlay-key :alpha $alpha :font-pct $font_pct :dur $dur :position edge :flash-hz $flash_hz)\n  (scramble reverse hflip speed2x)\n  (distractor :n $n_dist :yellow $n_yellow :same-length true)\n  (noise :sigma $noise)\n  (blur :radius $blur)\n  (nl-ambiguity 3))",
+    "model": "codex",
+    "samples": [
+      {
+        "sample_id": "img_s002000",
+        "image_path": "/tmp/cipher_gepa_r1/prog_2/img_s002000.jpg",
+        "gold_key": "Q8R237J"
+      },
+      {
+        "sample_id": "img_s002001",
+        "image_path": "/tmp/cipher_gepa_r1/prog_2/img_s002001.jpg",
+        "gold_key": "UMBW8UU"
+      },
+      {
+        "sample_id": "img_s002002",
+        "image_path": "/tmp/cipher_gepa_r1/prog_2/img_s002002.jpg",
+        "gold_key": "ZS2U66V"
+      },
+      {
+        "sample_id": "img_s002003",
+        "image_path": "/tmp/cipher_gepa_r1/prog_2/img_s002003.jpg",
+        "gold_key": "D8YKX33"
+      }
+    ],
+    "genome_summary": {
+      "fontsize_pct": 0.06,
+      "alpha": 180,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 3,
+    "program": "(seq\n  (overlay-key :alpha 140 :font-pct 0.05 :dur 1.5 :position corner)\n  (scramble reverse vflip)\n  (gate (text-captcha \"compute: 7*8-3\") :on-fail blur-key)\n  (distractor :n 2 :yellow 1))",
+    "model": "gemini",
+    "samples": [
+      {
+        "sample_id": "img_s003000",
+        "image_path": "/tmp/cipher_gepa_r1/prog_3/img_s003000.jpg",
+        "gold_key": "WKJWEXQ"
+      },
+      {
+        "sample_id": "img_s003001",
+        "image_path": "/tmp/cipher_gepa_r1/prog_3/img_s003001.jpg",
+        "gold_key": "KQMHKX7"
+      },
+      {
+        "sample_id": "img_s003002",
+        "image_path": "/tmp/cipher_gepa_r1/prog_3/img_s003002.jpg",
+        "gold_key": "GWNBNUZ"
+      },
+      {
+        "sample_id": "img_s003003",
+        "image_path": "/tmp/cipher_gepa_r1/prog_3/img_s003003.jpg",
+        "gold_key": "TZXU67B"
+      }
+    ],
+    "genome_summary": {
+      "fontsize_pct": 0.05,
+      "alpha": 140,
+      "n_distractors": 2,
+      "yellow_distractors": 1,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 4,
+    "program": "(seq\n  (overlay-key :alpha $alpha :font-pct $font_pct :dur $dur :position edge :flash-hz $flash_hz :key-len 10)\n  (scramble reverse hflip vflip speed2x)\n  (distractor :n $n_dist :yellow $n_yellow :same-length true)\n  (gate (text-captcha \"reverse('cipher')=?\") :on-fail add-distractor)\n  (noise :sigma $noise)\n  (blur :radius $blur)\n  (nl-ambiguity $nl_ambig))",
+    "model": "claude",
+    "samples": [
+      {
+        "sample_id": "img_s004000",
+        "image_path": "/tmp/cipher_gepa_r1/prog_4/img_s004000.jpg",
+        "gold_key": "PPQ8SXLXML"
+      },
+      {
+        "sample_id": "img_s004001",
+        "image_path": "/tmp/cipher_gepa_r1/prog_4/img_s004001.jpg",
+        "gold_key": "PEG2YZ5RX3"
+      },
+      {
+        "sample_id": "img_s004002",
+        "image_path": "/tmp/cipher_gepa_r1/prog_4/img_s004002.jpg",
+        "gold_key": "7Y63A2ZCKR"
+      },
+      {
+        "sample_id": "img_s004003",
+        "image_path": "/tmp/cipher_gepa_r1/prog_4/img_s004003.jpg",
+        "gold_key": "9HHBDWYUJC"
+      }
+    ],
+    "genome_summary": {
+      "fontsize_pct": 0.06,
+      "alpha": 180,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  }
+]
