@@ -1,0 +1,37 @@
+# CIPHER ladder-calibration task for the autoresearch engine.
+# Target profile: per-level EM the reference VLM should achieve.
+# Fitness = -sum_l (em_l - target_l)^2 (with optional char_acc floor).
+
+name: cipher-ladder-calibration
+reference_model: claude-sonnet-4-6
+levels:
+  - name: L1
+    target_em: 0.95
+    min_char_acc: 0.90
+  - name: L2
+    target_em: 0.70
+    min_char_acc: 0.85
+  - name: L3
+    target_em: 0.40
+    min_char_acc: 0.75
+  - name: L4
+    target_em: 0.15
+    min_char_acc: 0.60
+  - name: L5
+    target_em: 0.03
+    min_char_acc: 0.30
+
+genome_schema:
+  alpha:            {type: int,   range: [120, 255]}
+  fontsize_pct:     {type: float, range: [0.04, 0.14]}
+  key_length:       {type: int,   range: [5, 9]}
+  n_distractors:    {type: int,   range: [0, 4]}
+  yellow_distractors: {type: int, range: [0, 2]}
+  noise_sigma:      {type: float, range: [0.0, 4.0]}
+  blur_radius:      {type: float, range: [0.0, 0.5]}
+  shadow:           {type: bool}
+  position_mode:    {type: enum,  values: [center, edge, random]}
+  distractor_same_length: {type: bool}
+
+samples_per_level: 16   # raise to 50 for stability once ladder is frozen
+rounds_budget: 12

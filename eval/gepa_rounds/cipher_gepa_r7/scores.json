@@ -1,0 +1,97 @@
+[
+  {
+    "program_idx": 0,
+    "em": 0.75,
+    "char_acc": 0.9464285714285714,
+    "matches": 12,
+    "n": 16,
+    "missing": 0,
+    "fitness": -0.72,
+    "desc": "L1 ceiling: \u03b1=255 font=12% no dist no noise",
+    "params": {
+      "alpha": 255,
+      "fontsize_pct": 0.12,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 1,
+    "em": 0.5,
+    "char_acc": 0.8660714285714286,
+    "matches": 8,
+    "n": 16,
+    "missing": 0,
+    "fitness": -0.47,
+    "desc": "L2 easy: \u03b1=230 font=9%",
+    "params": {
+      "alpha": 230,
+      "fontsize_pct": 0.09,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 2,
+    "em": 0.0,
+    "char_acc": 0.5892857142857143,
+    "matches": 0,
+    "n": 16,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "L3 medium: \u03b1=200 font=7% 1 cyan dist \u03c3=1",
+    "params": {
+      "alpha": 200,
+      "fontsize_pct": 0.07,
+      "key_length": 7,
+      "n_distractors": 1,
+      "yellow_distractors": 0,
+      "noise_sigma": 1.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 3,
+    "em": 0.0,
+    "char_acc": 0.38392857142857145,
+    "matches": 0,
+    "n": 16,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "L4 hard: \u03b1=180 font=6% 2 dist (1y) \u03c3=2 blur=0.1",
+    "params": {
+      "alpha": 180,
+      "fontsize_pct": 0.06,
+      "key_length": 7,
+      "n_distractors": 2,
+      "yellow_distractors": 1,
+      "noise_sigma": 2.0,
+      "blur_radius": 0.1
+    }
+  },
+  {
+    "program_idx": 4,
+    "em": 0.0,
+    "char_acc": 0.14285714285714285,
+    "matches": 0,
+    "n": 16,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "L5 floor: \u03b1=160 font=5.5% 3 dist (1y) \u03c3=3 blur=0.15",
+    "params": {
+      "alpha": 160,
+      "fontsize_pct": 0.055,
+      "key_length": 7,
+      "n_distractors": 3,
+      "yellow_distractors": 1,
+      "noise_sigma": 3.0,
+      "blur_radius": 0.15
+    }
+  }
+]
