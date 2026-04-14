@@ -1,0 +1,97 @@
+[
+  {
+    "program_idx": 0,
+    "em": 0.625,
+    "char_acc": 0.9464285714285714,
+    "matches": 5,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.595,
+    "desc": "trivial: \u03b1=255 font=12% no dist, no noise",
+    "params": {
+      "alpha": 255,
+      "fontsize_pct": 0.12,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 1,
+    "em": 0.375,
+    "char_acc": 0.8928571428571429,
+    "matches": 3,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.345,
+    "desc": "very easy: \u03b1=245 font=10%",
+    "params": {
+      "alpha": 245,
+      "fontsize_pct": 0.1,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 2,
+    "em": 0.375,
+    "char_acc": 0.8214285714285714,
+    "matches": 3,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.345,
+    "desc": "easy: \u03b1=235 font=9%",
+    "params": {
+      "alpha": 235,
+      "fontsize_pct": 0.09,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 3,
+    "em": 0.0,
+    "char_acc": 0.7678571428571429,
+    "matches": 0,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.03,
+    "desc": "sanity: \u03b1=225 font=8.5% (~R5 prog_0)",
+    "params": {
+      "alpha": 225,
+      "fontsize_pct": 0.085,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 4,
+    "em": 0.125,
+    "char_acc": 0.7678571428571429,
+    "matches": 1,
+    "n": 8,
+    "missing": 0,
+    "fitness": -0.095,
+    "desc": "R5 prog_0 +1 distractor: \u03b1=220 font=8%, 1 cyan dist",
+    "params": {
+      "alpha": 220,
+      "fontsize_pct": 0.08,
+      "key_length": 7,
+      "n_distractors": 1,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  }
+]

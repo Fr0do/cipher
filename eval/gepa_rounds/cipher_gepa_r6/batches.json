@@ -1,0 +1,277 @@
+[
+  {
+    "program_idx": 0,
+    "desc": "trivial: \u03b1=255 font=12% no dist, no noise",
+    "samples": [
+      {
+        "sample_id": "img_s040000",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040000.jpg",
+        "gold_key": "WWFBQC4"
+      },
+      {
+        "sample_id": "img_s040001",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040001.jpg",
+        "gold_key": "5FTSS9N"
+      },
+      {
+        "sample_id": "img_s040002",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040002.jpg",
+        "gold_key": "4XYUV7Y"
+      },
+      {
+        "sample_id": "img_s040003",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040003.jpg",
+        "gold_key": "6UDJ9H8"
+      },
+      {
+        "sample_id": "img_s040004",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040004.jpg",
+        "gold_key": "4D8YXMJ"
+      },
+      {
+        "sample_id": "img_s040005",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040005.jpg",
+        "gold_key": "XUPLBFW"
+      },
+      {
+        "sample_id": "img_s040006",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040006.jpg",
+        "gold_key": "3B2FZ2B"
+      },
+      {
+        "sample_id": "img_s040007",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_0/img_s040007.jpg",
+        "gold_key": "B3H3W7N"
+      }
+    ],
+    "genome_summary": {
+      "alpha": 255,
+      "fontsize_pct": 0.12,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 1,
+    "desc": "very easy: \u03b1=245 font=10%",
+    "samples": [
+      {
+        "sample_id": "img_s041000",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041000.jpg",
+        "gold_key": "26UP2XN"
+      },
+      {
+        "sample_id": "img_s041001",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041001.jpg",
+        "gold_key": "CNYXK33"
+      },
+      {
+        "sample_id": "img_s041002",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041002.jpg",
+        "gold_key": "5RZHEGA"
+      },
+      {
+        "sample_id": "img_s041003",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041003.jpg",
+        "gold_key": "YYG8GC2"
+      },
+      {
+        "sample_id": "img_s041004",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041004.jpg",
+        "gold_key": "JEGFQNF"
+      },
+      {
+        "sample_id": "img_s041005",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041005.jpg",
+        "gold_key": "M7EGUXK"
+      },
+      {
+        "sample_id": "img_s041006",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041006.jpg",
+        "gold_key": "ESG6RV7"
+      },
+      {
+        "sample_id": "img_s041007",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_1/img_s041007.jpg",
+        "gold_key": "N8FB5ZH"
+      }
+    ],
+    "genome_summary": {
+      "alpha": 245,
+      "fontsize_pct": 0.1,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 2,
+    "desc": "easy: \u03b1=235 font=9%",
+    "samples": [
+      {
+        "sample_id": "img_s042000",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042000.jpg",
+        "gold_key": "PTWXGWW"
+      },
+      {
+        "sample_id": "img_s042001",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042001.jpg",
+        "gold_key": "WDVXK54"
+      },
+      {
+        "sample_id": "img_s042002",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042002.jpg",
+        "gold_key": "3G2WUQM"
+      },
+      {
+        "sample_id": "img_s042003",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042003.jpg",
+        "gold_key": "XGWJ7QQ"
+      },
+      {
+        "sample_id": "img_s042004",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042004.jpg",
+        "gold_key": "A3WEL8P"
+      },
+      {
+        "sample_id": "img_s042005",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042005.jpg",
+        "gold_key": "Q9XRWPN"
+      },
+      {
+        "sample_id": "img_s042006",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042006.jpg",
+        "gold_key": "C9XLD8V"
+      },
+      {
+        "sample_id": "img_s042007",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_2/img_s042007.jpg",
+        "gold_key": "UAZET8T"
+      }
+    ],
+    "genome_summary": {
+      "alpha": 235,
+      "fontsize_pct": 0.09,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 3,
+    "desc": "sanity: \u03b1=225 font=8.5% (~R5 prog_0)",
+    "samples": [
+      {
+        "sample_id": "img_s043000",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043000.jpg",
+        "gold_key": "D3G33LG"
+      },
+      {
+        "sample_id": "img_s043001",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043001.jpg",
+        "gold_key": "6SGEKPF"
+      },
+      {
+        "sample_id": "img_s043002",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043002.jpg",
+        "gold_key": "ZE7ZF46"
+      },
+      {
+        "sample_id": "img_s043003",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043003.jpg",
+        "gold_key": "NSJGVVB"
+      },
+      {
+        "sample_id": "img_s043004",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043004.jpg",
+        "gold_key": "DRYS8ZB"
+      },
+      {
+        "sample_id": "img_s043005",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043005.jpg",
+        "gold_key": "G6EKSSR"
+      },
+      {
+        "sample_id": "img_s043006",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043006.jpg",
+        "gold_key": "P3JGAQH"
+      },
+      {
+        "sample_id": "img_s043007",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_3/img_s043007.jpg",
+        "gold_key": "2N8QYHB"
+      }
+    ],
+    "genome_summary": {
+      "alpha": 225,
+      "fontsize_pct": 0.085,
+      "key_length": 7,
+      "n_distractors": 0,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  },
+  {
+    "program_idx": 4,
+    "desc": "R5 prog_0 +1 distractor: \u03b1=220 font=8%, 1 cyan dist",
+    "samples": [
+      {
+        "sample_id": "img_s044000",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044000.jpg",
+        "gold_key": "Z9XAYHG"
+      },
+      {
+        "sample_id": "img_s044001",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044001.jpg",
+        "gold_key": "JFEN6GD"
+      },
+      {
+        "sample_id": "img_s044002",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044002.jpg",
+        "gold_key": "ZLAWS9X"
+      },
+      {
+        "sample_id": "img_s044003",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044003.jpg",
+        "gold_key": "E85E86C"
+      },
+      {
+        "sample_id": "img_s044004",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044004.jpg",
+        "gold_key": "CZANH8Q"
+      },
+      {
+        "sample_id": "img_s044005",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044005.jpg",
+        "gold_key": "ZL5K2R7"
+      },
+      {
+        "sample_id": "img_s044006",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044006.jpg",
+        "gold_key": "3GN29LJ"
+      },
+      {
+        "sample_id": "img_s044007",
+        "image_path": "/Users/mkurkin/experiments/cipher/eval/gepa_rounds/cipher_gepa_r6/prog_4/img_s044007.jpg",
+        "gold_key": "VYUYSQG"
+      }
+    ],
+    "genome_summary": {
+      "alpha": 220,
+      "fontsize_pct": 0.08,
+      "key_length": 7,
+      "n_distractors": 1,
+      "yellow_distractors": 0,
+      "noise_sigma": 0.0,
+      "blur_radius": 0.0
+    }
+  }
+]
